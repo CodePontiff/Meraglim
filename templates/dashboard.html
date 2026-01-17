@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,6 +110,11 @@
             border: 1px solid var(--border-color);
         }
         
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
         .btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -181,6 +185,12 @@
             padding: 16px;
             border: 1px solid var(--border-color);
             text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .stat-card:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-color);
         }
         
         .stat-number {
@@ -202,58 +212,169 @@
             position: relative;
         }
         
-        .recent-scans {
+        /* Enhanced Recent Scans */
+        .recent-scans-container {
             margin-top: 20px;
         }
         
-        .scan-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
+        .scan-card {
             background: #f8fafc;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
             border: 1px solid var(--border-color);
             transition: all 0.2s;
+            cursor: pointer;
         }
         
-        .scan-item:hover {
+        .scan-card:hover {
             background: #f1f5f9;
             border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        .scan-info h4 {
-            color: var(--dark-color);
-            font-size: 14px;
+        .scan-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .scan-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .scan-domain {
             font-weight: 600;
-            margin-bottom: 4px;
+            color: var(--dark-color);
+            font-size: 15px;
         }
         
-        .scan-info p {
-            color: var(--gray-color);
+        .scan-time {
             font-size: 12px;
+            color: var(--gray-color);
+            margin-top: 2px;
+        }
+        
+        .scan-id {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 11px;
+            color: var(--gray-color);
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
         
         .scan-stats {
-            display: flex;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
         }
         
-        .stat-badge {
+        .scan-stat {
             background: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--dark-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
             border: 1px solid var(--border-color);
         }
         
-        .stat-badge.strong {
+        .scan-stat-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 2px;
+        }
+        
+        .scan-stat-label {
+            font-size: 11px;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+        
+        .scan-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-success {
             background: #d1fae5;
             color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .confidence-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+        }
+        
+        .confidence-high {
+            color: #10b981;
             border-color: #a7f3d0;
+            background: #f0fdf4;
+        }
+        
+        .confidence-medium {
+            color: #f59e0b;
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+        
+        .confidence-low {
+            color: #6b7280;
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+        
+        .confidence-strong {
+            color: #ef4444;
+            border-color: #fecaca;
+            background: #fef2f2;
         }
         
         .settings-panel {
@@ -348,28 +469,6 @@
             color: var(--dark-color);
         }
         
-        @media (max-width: 768px) {
-            .dashboard-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
-            }
-            
-            .nav-buttons {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
         /* Tooltip styles */
         .tooltip {
             position: relative;
@@ -378,21 +477,23 @@
         
         .tooltip .tooltip-text {
             visibility: hidden;
-            width: 200px;
+            width: 240px;
             background-color: var(--dark-color);
             color: white;
-            text-align: center;
+            text-align: left;
             border-radius: 6px;
-            padding: 8px;
+            padding: 10px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -100px;
+            margin-left: -120px;
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 12px;
             font-weight: normal;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
         .tooltip:hover .tooltip-text {
@@ -423,6 +524,208 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* Scan Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            color: var(--dark-color);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--gray-color);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        
+        .modal-close:hover {
+            background: #f8fafc;
+            color: var(--dark-color);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-scan-details {
+            margin-bottom: 20px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .detail-label {
+            color: var(--gray-color);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            color: var(--dark-color);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        .modal-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .modal-stat {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .modal-stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+        }
+        
+        .modal-stat-label {
+            font-size: 11px;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .scan-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+        
+        /* Scan filters */
+        .scan-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--gray-color);
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #f8fafc;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-color);
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -491,37 +794,27 @@
                 </div>
             </div>
             
-            <!-- Recent Scans -->
-            <div class="card">
+            <!-- Enhanced Recent Scans -->
+            <div class="card" style="grid-column: span 2;">
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-history card-icon"></i>
-                        Recent Scans
+                        Recent Scans - Detailed View
                     </h2>
-                    <span class="stat-badge">{{ recent_scans|length }} scans</span>
+                    <div class="scan-filters" id="scanFilters">
+                        <button class="filter-btn active" data-filter="all">All Scans</button>
+                        <button class="filter-btn" data-filter="high">High Confidence</button>
+                        <button class="filter-btn" data-filter="api">API Patterns</button>
+                        <button class="filter-btn" data-filter="secrets">Secret Patterns</button>
+                    </div>
                 </div>
-                <div class="recent-scans" id="recentScans">
-                    {% for scan in recent_scans %}
-                    <a href="/dashboard/scan/{{ scan.scan_id }}" style="text-decoration: none;">
-                        <div class="scan-item">
-                            <div class="scan-info">
-                                <h4>{{ scan.domain }}</h4>
-                                <p>{{ scan.timestamp }}</p>
-                            </div>
-                            <div class="scan-stats">
-                                <span class="stat-badge">{{ scan.endpoints_count }} patterns</span>
-                                <span class="stat-badge strong">{{ scan.high_confidence_patterns }} strong</span>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
+                <div class="recent-scans-container" id="recentScansContainer">
+                    <!-- Will be populated by JavaScript -->
                 </div>
-                {% if not recent_scans %}
-                <div class="loading">
-                    <i class="fas fa-search" style="font-size: 32px; color: var(--gray-color); margin-bottom: 16px;"></i>
-                    <p>No scans yet. Start your first reconnaissance scan.</p>
+                <div class="info-card">
+                    <strong><i class="fas fa-eye"></i> View Details:</strong>
+                    <p>Click on any scan card to view detailed analysis and download investigation guides.</p>
                 </div>
-                {% endif %}
             </div>
             
             <!-- Top Categories -->
@@ -542,6 +835,23 @@
                 <div class="info-card">
                     <strong><i class="fas fa-filter"></i> Usage:</strong>
                     <p>Common pattern categories help understand application structure for manual investigation.</p>
+                </div>
+            </div>
+            
+            <!-- Scan Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-calendar-alt card-icon"></i>
+                        Scan Timeline
+                    </h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-chart-line"></i> Trend:</strong>
+                    <p>Track reconnaissance activity over time to identify patterns in your investigation workflow.</p>
                 </div>
             </div>
             
@@ -607,8 +917,8 @@
                         <strong style="color: var(--dark-color); font-size: 14px; display: block; margin-bottom: 4px;">
                             <i class="fas fa-user-check" style="color: var(--success-color);"></i> Verification Required
                         </strong>
-                        <p style="color: var(--gray-color); font-size: 13px; line-height: 1.5;">
-                            100% manual verification required for all findings. Pattern matching ≠ vulnerability confirmation.
+                        <p style="color: var(--dark-color); font-size: 13px; line-height: 1.5; padding: 10px; background: #fef2f2; border-radius: 6px; border-left: 4px solid #ef4444;">
+                            <strong>⚠️ CRITICAL:</strong> 100% manual verification required for all findings. Pattern matching ≠ vulnerability confirmation.
                         </p>
                     </div>
                 </div>
@@ -621,6 +931,69 @@
             <p style="margin-top: 8px; font-size: 12px; color: var(--gray-color);">
                 <i class="fas fa-exclamation-circle"></i> Use responsibly with proper authorization
             </p>
+        </div>
+    </div>
+
+    <!-- Scan Detail Modal -->
+    <div class="modal" id="scanDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalScanTitle">Scan Details</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-scan-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Domain:</span>
+                        <span class="detail-value" id="modalDomain">N/A</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Scan ID:</span>
+                        <span class="detail-value" id="modalScanId">N/A</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Timestamp:</span>
+                        <span class="detail-value" id="modalTimestamp">N/A</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value" id="modalStatus">N/A</span>
+                    </div>
+                </div>
+                
+                <div class="modal-stats" id="modalStats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4 style="font-size: 14px; font-weight: 600; color: var(--dark-color); margin-bottom: 12px;">
+                        <i class="fas fa-chart-pie"></i> Pattern Match Distribution
+                    </h4>
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="modalConfidenceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="scan-actions" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <a href="#" class="btn btn-primary btn-small" id="modalViewReport">
+                        <i class="fas fa-file-alt"></i> View Full Report
+                    </a>
+                    <a href="#" class="btn btn-success btn-small" id="modalExportJson">
+                        <i class="fas fa-download"></i> Export JSON
+                    </a>
+                    <a href="#" class="btn btn-warning btn-small" id="modalExportCsv">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </a>
+                    <a href="#" class="btn btn-secondary btn-small" id="modalDashboard">
+                        <i class="fas fa-chart-pie"></i> Detailed Dashboard
+                    </a>
+                </div>
+                
+                <div class="info-card" style="margin-top: 16px;">
+                    <strong><i class="fas fa-exclamation-circle"></i> Important:</strong>
+                    <p>This scan contains pattern analysis results. All findings require manual verification before any action.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -659,6 +1032,14 @@
                 if (data.top_categories && data.top_categories.length > 0) {
                     createCategoriesChart(data.top_categories);
                 }
+                
+                // Create timeline chart if available
+                if (data.scan_timeline && data.scan_timeline.length > 0) {
+                    createTimelineChart(data.scan_timeline);
+                }
+                
+                // Load and display recent scans
+                updateRecentScans(data.recent_scans);
                 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
@@ -723,7 +1104,7 @@
             ];
             
             statsContainer.innerHTML = stats.map(stat => `
-                <div class="stat-card tooltip">
+                <div class="stat-card tooltip" onclick="showStatDetail('${stat.label}', ${stat.value})" style="cursor: pointer;">
                     <div style="font-size: 20px; color: ${stat.color}; margin-bottom: 8px;">
                         <i class="${stat.icon}"></i>
                     </div>
@@ -734,10 +1115,135 @@
             `).join('');
         }
         
+        function updateRecentScans(scans) {
+            const container = document.getElementById('recentScansContainer');
+            
+            if (!scans || scans.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>No scans yet</h3>
+                        <p>Start your first reconnaissance scan to see detailed results here.</p>
+                        <a href="/" class="btn btn-primary btn-small">
+                            <i class="fas fa-rocket"></i> Start a Scan
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort scans by timestamp (newest first)
+            scans.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            container.innerHTML = scans.map(scan => {
+                const timestamp = new Date(scan.timestamp);
+                const formattedTime = timestamp.toLocaleString();
+                const timeAgo = getTimeAgo(timestamp);
+                
+                // Calculate confidence indicator
+                const strongMatches = scan.high_confidence_patterns || 0;
+                const totalPatterns = scan.endpoints_count || 1;
+                const confidencePercent = Math.round((strongMatches / totalPatterns) * 100);
+                
+                let confidenceClass = 'confidence-low';
+                let confidenceIcon = 'fas fa-chart-line';
+                
+                if (confidencePercent >= 20) {
+                    confidenceClass = 'confidence-medium';
+                    confidenceIcon = 'fas fa-chart-bar';
+                }
+                if (confidencePercent >= 40) {
+                    confidenceClass = 'confidence-high';
+                    confidenceIcon = 'fas fa-chart-line';
+                }
+                if (confidencePercent >= 60) {
+                    confidenceClass = 'confidence-strong';
+                    confidenceIcon = 'fas fa-bullseye';
+                }
+                
+                return `
+                    <div class="scan-card" data-scan-id="${scan.scan_id}" 
+                         data-confidence="${confidencePercent}"
+                         data-api="${scan.api_endpoints_found || 0}"
+                         data-secrets="${scan.secrets_found || 0}">
+                        <div class="scan-card-header">
+                            <div>
+                                <div class="scan-card-title">
+                                    <span class="scan-domain">${scan.domain || 'Unknown Domain'}</span>
+                                    <span class="confidence-indicator ${confidenceClass}">
+                                        <i class="${confidenceIcon}"></i> ${confidencePercent}% Strong Matches
+                                    </span>
+                                </div>
+                                <div class="scan-time">
+                                    <i class="far fa-clock"></i> ${timeAgo} • ${formattedTime}
+                                </div>
+                            </div>
+                            <div class="scan-id">${scan.scan_id.substring(0, 8)}...</div>
+                        </div>
+                        
+                        <div class="scan-stats">
+                            <div class="scan-stat">
+                                <div class="scan-stat-number">${scan.endpoints_count || 0}</div>
+                                <div class="scan-stat-label">Patterns Found</div>
+                            </div>
+                            <div class="scan-stat">
+                                <div class="scan-stat-number">${scan.high_confidence_patterns || 0}</div>
+                                <div class="scan-stat-label">Strong Matches</div>
+                            </div>
+                            <div class="scan-stat">
+                                <div class="scan-stat-number">${scan.api_endpoints_found || 0}</div>
+                                <div class="scan-stat-label">API Patterns</div>
+                            </div>
+                            <div class="scan-stat">
+                                <div class="scan-stat-number">${scan.secrets_found || 0}</div>
+                                <div class="scan-stat-label">Secret Patterns</div>
+                            </div>
+                        </div>
+                        
+                        <div class="scan-actions">
+                            <button class="btn btn-primary btn-small view-details" data-scan-id="${scan.scan_id}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <a href="/dashboard/scan/${scan.scan_id}" class="btn btn-secondary btn-small">
+                                <i class="fas fa-chart-pie"></i> Dashboard
+                            </a>
+                            <a href="/scan/${scan.scan_id}" class="btn btn-success btn-small">
+                                <i class="fas fa-file-alt"></i> Full Report
+                            </a>
+                            <a href="/api/export/${scan.scan_id}/json" class="btn btn-warning btn-small" target="_blank">
+                                <i class="fas fa-download"></i> Export
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add event listeners to view details buttons
+            document.querySelectorAll('.view-details').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const scanId = this.getAttribute('data-scan-id');
+                    showScanDetails(scanId);
+                });
+            });
+            
+            // Add event listeners to scan cards
+            document.querySelectorAll('.scan-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('.btn')) {
+                        const scanId = this.getAttribute('data-scan-id');
+                        showScanDetails(scanId);
+                    }
+                });
+            });
+        }
+        
         function createConfidenceChart(distribution) {
             const ctx = document.getElementById('confidenceChart').getContext('2d');
             
-            const labels = ['Strong Match', 'Good Match', 'Moderate Match', 'Weak Match', 'Minimal Match'];
+            const labels = ['Strong Match (80-100%)', 'Good Match (60-79%)', 'Moderate Match (40-59%)', 'Weak Match (20-39%)', 'Minimal Match (0-19%)'];
             const data = [
                 distribution.strong || 0,
                 distribution.good || 0,
@@ -854,7 +1360,260 @@
             });
         }
         
+        function createTimelineChart(timelineData) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            const labels = timelineData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            
+            const data = timelineData.map(item => item.count);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Scans per Day',
+                        data: data,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        async function showScanDetails(scanId) {
+            try {
+                const modal = document.getElementById('scanDetailModal');
+                const response = await fetch(`/api/dashboard/scan/${scanId}`);
+                
+                if (!response.ok) {
+                    // Fallback to basic scan data if detailed dashboard data not available
+                    const basicResponse = await fetch(`/api/scan_results/${scanId}`);
+                    if (!basicResponse.ok) throw new Error('Failed to load scan details');
+                    
+                    const basicData = await basicResponse.json();
+                    if (basicData.error) throw new Error(basicData.error);
+                    
+                    showBasicScanDetails(scanId, basicData);
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                // Update modal content
+                document.getElementById('modalScanTitle').textContent = `Scan: ${data.domain}`;
+                document.getElementById('modalDomain').textContent = data.domain;
+                document.getElementById('modalScanId').textContent = scanId;
+                document.getElementById('modalTimestamp').textContent = new Date(data.timestamp).toLocaleString();
+                document.getElementById('modalStatus').textContent = data.status || 'completed';
+                
+                // Update modal stats
+                const modalStats = document.getElementById('modalStats');
+                const stats = [
+                    { label: 'Patterns', value: data.summary.endpoints_count || 0, icon: 'fas fa-sitemap' },
+                    { label: 'Strong Matches', value: data.summary.high_confidence_patterns || 0, icon: 'fas fa-bullseye' },
+                    { label: 'Live URLs', value: data.summary.live_urls_count || 0, icon: 'fas fa-globe' },
+                    { label: 'JS Files', value: data.summary.js_files_count || 0, icon: 'fas fa-file-code' }
+                ];
+                
+                modalStats.innerHTML = stats.map(stat => `
+                    <div class="modal-stat">
+                        <div class="modal-stat-number">${stat.value}</div>
+                        <div class="modal-stat-label">${stat.label}</div>
+                    </div>
+                `).join('');
+                
+                // Create modal confidence chart
+                createModalConfidenceChart(data.confidence_distribution || data.summary);
+                
+                // Update modal action links
+                document.getElementById('modalViewReport').href = `/scan/${scanId}`;
+                document.getElementById('modalExportJson').href = `/api/export/${scanId}/json`;
+                document.getElementById('modalExportCsv').href = `/api/export/${scanId}/csv`;
+                document.getElementById('modalDashboard').href = `/dashboard/scan/${scanId}`;
+                
+                // Show modal
+                modal.style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Error loading scan details:', error);
+                alert('Failed to load scan details. Please try again.');
+            }
+        }
+        
+        function showBasicScanDetails(scanId, data) {
+            const modal = document.getElementById('scanDetailModal');
+            
+            document.getElementById('modalScanTitle').textContent = `Scan: ${data.domain || scanId}`;
+            document.getElementById('modalDomain').textContent = data.domain || 'N/A';
+            document.getElementById('modalScanId').textContent = scanId;
+            document.getElementById('modalTimestamp').textContent = data.timestamp || 'N/A';
+            document.getElementById('modalStatus').textContent = data.status || 'completed';
+            
+            const summary = data.scan_summary || {};
+            const modalStats = document.getElementById('modalStats');
+            const stats = [
+                { label: 'Patterns', value: summary.endpoints_count || 0, icon: 'fas fa-sitemap' },
+                { label: 'Strong Matches', value: summary.high_confidence_patterns || 0, icon: 'fas fa-bullseye' },
+                { label: 'Live URLs', value: summary.live_urls_count || 0, icon: 'fas fa-globe' },
+                { label: 'JS Files', value: summary.js_files_count || 0, icon: 'fas fa-file-code' }
+            ];
+            
+            modalStats.innerHTML = stats.map(stat => `
+                <div class="modal-stat">
+                    <div class="modal-stat-number">${stat.value}</div>
+                    <div class="modal-stat-label">${stat.label}</div>
+                </div>
+            `).join('');
+            
+            // Update modal action links
+            document.getElementById('modalViewReport').href = `/scan/${scanId}`;
+            document.getElementById('modalExportJson').href = `/api/export/${scanId}/json`;
+            document.getElementById('modalExportCsv').href = `/api/export/${scanId}/csv`;
+            document.getElementById('modalDashboard').href = `/dashboard/scan/${scanId}`;
+            
+            // Show modal
+            modal.style.display = 'flex';
+        }
+        
+        function createModalConfidenceChart(distribution) {
+            const ctx = document.getElementById('modalConfidenceChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.modalConfidenceChart) {
+                window.modalConfidenceChart.destroy();
+            }
+            
+            // Handle different data structures
+            let data;
+            if (typeof distribution === 'object' && 'strong' in distribution) {
+                // New format
+                data = [
+                    distribution.strong || 0,
+                    distribution.good || 0,
+                    distribution.moderate || 0,
+                    distribution.weak || 0,
+                    distribution.minimal || 0
+                ];
+            } else if (typeof distribution === 'object' && 'high_confidence_patterns' in distribution) {
+                // Fallback to summary data
+                const strong = distribution.high_confidence_patterns || 0;
+                const total = distribution.endpoints_count || 1;
+                const other = Math.max(0, total - strong);
+                data = [strong, other];
+            } else {
+                data = [0, 0, 0, 0, 0];
+            }
+            
+            const labels = data.length === 5 ? 
+                ['Strong', 'Good', 'Moderate', 'Weak', 'Minimal'] : 
+                ['Strong Matches', 'Other Patterns'];
+            
+            const colors = data.length === 5 ? 
+                ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#6B7280'] :
+                ['#10B981', '#6B7280'];
+            
+            window.modalConfidenceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: 'white',
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
         function setupEventListeners() {
+            // Modal close button
+            document.getElementById('modalClose').addEventListener('click', function() {
+                document.getElementById('scanDetailModal').style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('scanDetailModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Scan filters
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Update active state
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter scans
+                    filterScans(filter);
+                });
+            });
+            
             // Save to DB toggle
             const saveToggle = document.getElementById('saveToDbToggle');
             saveToggle.addEventListener('change', async function() {
@@ -890,9 +1649,7 @@
             // Clear data button
             const clearBtn = document.getElementById('clearDataBtn');
             clearBtn.addEventListener('click', async function() {
-                if (confirm('⚠️ Are you sure you want to clear all dashboard data?
-
-This action cannot be undone.')) {
+                if (confirm('⚠️ Are you sure you want to clear all dashboard data?\n\nThis action cannot be undone.')) {
                     try {
                         const response = await fetch('/api/dashboard/clear_data', {
                             method: 'POST'
@@ -914,6 +1671,100 @@ This action cannot be undone.')) {
             });
         }
         
+        function filterScans(filter) {
+            const scanCards = document.querySelectorAll('.scan-card');
+            
+            scanCards.forEach(card => {
+                let showCard = true;
+                
+                switch(filter) {
+                    case 'high':
+                        const confidence = parseInt(card.getAttribute('data-confidence'));
+                        showCard = confidence >= 40;
+                        break;
+                    case 'api':
+                        const apiCount = parseInt(card.getAttribute('data-api'));
+                        showCard = apiCount > 0;
+                        break;
+                    case 'secrets':
+                        const secretCount = parseInt(card.getAttribute('data-secrets'));
+                        showCard = secretCount > 0;
+                        break;
+                    default:
+                        showCard = true;
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
+            });
+            
+            // Show empty state if no cards are visible
+            const visibleCards = Array.from(scanCards).filter(card => card.style.display !== 'none');
+            const container = document.getElementById('recentScansContainer');
+            
+            if (visibleCards.length === 0 && filter !== 'all') {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h3>No scans match the filter</h3>
+                        <p>Try a different filter to see matching scans.</p>
+                        <button class="filter-btn active" data-filter="all" onclick="document.querySelector('[data-filter=\"all\"]').click()">
+                            Show All Scans
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return `${Math.floor(diffDays / 7)}w ago`;
+        }
+        
+        function showStatDetail(statName, statValue) {
+            let message = '';
+            let icon = 'info';
+            
+            switch(statName) {
+                case 'Total Scans':
+                    message = `Total reconnaissance scans performed: ${statValue}`;
+                    icon = 'search';
+                    break;
+                case 'Unique Domains':
+                    message = `Unique domains analyzed: ${statValue}`;
+                    icon = 'globe';
+                    break;
+                case 'Patterns Found':
+                    message = `Total endpoint patterns discovered across all scans: ${statValue}`;
+                    icon = 'sitemap';
+                    break;
+                case 'Strong Matches':
+                    message = `Patterns with strong match confidence (80-100%): ${statValue}`;
+                    icon = 'bullseye';
+                    break;
+                case 'API Patterns':
+                    message = `API endpoint patterns discovered: ${statValue}`;
+                    icon = 'plug';
+                    break;
+                case 'Secret Patterns':
+                    message = `Potential secret patterns found (require verification): ${statValue}`;
+                    icon = 'key';
+                    break;
+            }
+            
+            showNotification(message, 'info');
+        }
+        
         function showNotification(message, type = 'info') {
             // Create notification element
             const notification = document.createElement('div');
@@ -929,21 +1780,31 @@ This action cannot be undone.')) {
                 max-width: 300px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 animation: slideIn 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             `;
             
             if (type === 'success') {
                 notification.style.backgroundColor = '#10B981';
             } else if (type === 'error') {
                 notification.style.backgroundColor = '#EF4444';
+            } else if (type === 'warning') {
+                notification.style.backgroundColor = '#F59E0B';
             } else {
                 notification.style.backgroundColor = '#3B82F6';
             }
             
+            const icons = {
+                'success': 'check-circle',
+                'error': 'exclamation-circle',
+                'warning': 'exclamation-triangle',
+                'info': 'info-circle'
+            };
+            
             notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                    <span>${message}</span>
-                </div>
+                <i class="fas fa-${icons[type] || 'info-circle'}" style="font-size: 18px;"></i>
+                <span style="flex: 1;">${message}</span>
             `;
             
             document.body.appendChild(notification);
