@@ -1,0 +1,965 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Details - Web Recon Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-400">
+                        <i class="fas fa-file-alt mr-2"></i>Scan Details
+                    </h1>
+                    <p class="text-gray-400 mt-2">Scan ID: {{ scan_id }}</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="/dashboard" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
+            <p class="text-gray-400">Loading scan details...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center py-12">
+            <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+            <h3 class="text-xl font-bold text-red-400 mb-2">Failed to Load Results</h3>
+            <p class="text-gray-400 mb-4" id="errorMessage"></p>
+            <button onclick="window.location.href='/" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Home
+            </button>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results" class="hidden">
+            <!-- Scan Summary -->
+            <div class="bg-gray-800 rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-6 text-green-400">
+                    <i class="fas fa-chart-bar mr-2"></i>Scan Summary
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-blue-400" id="subdomainsCount">0</div>
+                        <div class="text-sm text-gray-400">Selected Subdomains</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-green-400" id="liveUrlsCount">0</div>
+                        <div class="text-sm text-gray-400">Live URLs</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-yellow-400" id="endpointsCount">0</div>
+                        <div class="text-sm text-gray-400">Endpoints</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-purple-400" id="jsFilesCount">0</div>
+                        <div class="text-sm text-gray-400">JS Files</div>
+                    </div>
+                </div>
+                
+                <!-- Extended Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-red-400" id="highPriorityCount">0</div>
+                        <div class="text-sm text-gray-400">High Priority</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-orange-400" id="secretsCount">0</div>
+                        <div class="text-sm text-gray-400">Secrets Found</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-cyan-400" id="apiEndpointsCount">0</div>
+                        <div class="text-sm text-gray-400">API Endpoints</div>
+                    </div>
+                </div>
+                
+                <!-- Harvesting Stats -->
+                <div id="harvestingStats" class="grid grid-cols-2 gap-4 mt-4 hidden">
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-emerald-400" id="harvestedCount">0</div>
+                        <div class="text-sm text-gray-400">Harvested</div>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-amber-400" id="totalHarvested">0</div>
+                        <div class="text-sm text-gray-400">Total Harvested</div>
+                    </div>
+                </div>
+                
+                <!-- Domain Info -->
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                    <div class="text-sm text-gray-400">
+                        <strong>Domain:</strong> <span id="domainName" class="text-white">-</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-1">
+                        <strong>Scan Mode:</strong> <span id="scanMode" class="text-white">-</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-1">
+                        <strong>JS Analysis:</strong> <span id="jsAnalysis" class="text-white">-</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-1">
+                        <strong>Endpoint Harvesting:</strong> <span id="endpointHarvesting" class="text-white">-</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-1">
+                        <strong>Timestamp:</strong> <span id="scanTimestamp" class="text-white">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-6">
+                <div class="border-b border-gray-700">
+                    <nav class="flex space-x-8 overflow-x-auto">
+                        <button class="tab-btn py-3 px-1 border-b-2 border-blue-500 text-blue-400 font-medium whitespace-nowrap" data-tab="subdomains">
+                            <i class="fas fa-sitemap mr-2"></i>Selected Subdomains
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="liveurls">
+                            <i class="fas fa-link mr-2"></i>Live URLs
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="endpoints">
+                            <i class="fas fa-list mr-2"></i>Endpoints
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="jsfiles">
+                            <i class="fab fa-js mr-2"></i>JS Files
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="jsanalysis">
+                            <i class="fas fa-search mr-2"></i>JS Analysis
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="classified">
+                            <i class="fas fa-shield-alt mr-2"></i>Classified
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="recommendations">
+                            <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                        </button>
+                        <button class="tab-btn py-3 px-1 text-gray-400 hover:text-white font-medium whitespace-nowrap" data-tab="harvesting">
+                            <i class="fas fa-database mr-2"></i>Harvesting
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tabContent">
+                <!-- Subdomains Tab -->
+                <div id="subdomainsTab" class="tab-pane">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-blue-400">Selected Subdomains</h3>
+                            <button onclick="exportData('subdomains')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="text-left text-gray-400 border-b border-gray-700">
+                                        <th class="pb-3">#</th>
+                                        <th class="pb-3">Subdomain</th>
+                                        <th class="pb-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subdomainsTable">
+                                    <!-- Subdomains will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live URLs Tab -->
+                <div id="liveurlsTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-400">Live URLs Found</h3>
+                            <button onclick="exportData('live_urls')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        <div id="liveUrlsList" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Live URLs will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endpoints Tab -->
+                <div id="endpointsTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-yellow-400">Discovered Endpoints</h3>
+                            <button onclick="exportData('endpoints')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        <div id="endpointsList" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Endpoints will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JS Files Tab -->
+                <div id="jsfilesTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-purple-400">JavaScript Files</h3>
+                            <button onclick="exportData('js_files')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex space-x-4 mb-4">
+                                <div class="px-4 py-2 bg-blue-900/30 border border-blue-700 rounded-lg">
+                                    <div class="text-sm text-blue-400">Total JS Files</div>
+                                    <div class="text-xl font-bold" id="totalJsFiles">0</div>
+                                </div>
+                                <div class="px-4 py-2 bg-green-900/30 border border-green-700 rounded-lg">
+                                    <div class="text-sm text-green-400">Interesting Files</div>
+                                    <div class="text-xl font-bold" id="interestingJsFiles">0</div>
+                                </div>
+                                <div class="px-4 py-2 bg-red-900/30 border border-red-700 rounded-lg">
+                                    <div class="text-sm text-red-400">JS Map Files</div>
+                                    <div class="text-xl font-bold" id="jsMapFiles">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="jsFilesList" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- JS files will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JS Analysis Tab -->
+                <div id="jsanalysisTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-cyan-400">JavaScript Analysis</h3>
+                            <button onclick="exportData('js_analysis')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        
+                        <!-- Stats -->
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-gray-900 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-green-400" id="jsInternalUrls">0</div>
+                                <div class="text-sm text-gray-400">Internal URLs</div>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-yellow-400" id="jsApiUrls">0</div>
+                                <div class="text-sm text-gray-400">API Endpoints</div>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-red-400" id="jsSecrets">0</div>
+                                <div class="text-sm text-gray-400">Secrets Found</div>
+                            </div>
+                        </div>
+
+                        <!-- Internal URLs -->
+                        <div class="mb-6">
+                            <h4 class="text-lg font-bold mb-3 text-green-400">Internal URLs Found in JS</h4>
+                            <div id="jsInternalUrlsList" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- Internal URLs will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- API Endpoints -->
+                        <div class="mb-6">
+                            <h4 class="text-lg font-bold mb-3 text-yellow-400">API Endpoints Found in JS</h4>
+                            <div id="jsApiUrlsList" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- API endpoints will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Secrets -->
+                        <div>
+                            <h4 class="text-lg font-bold mb-3 text-red-400">Secrets Found in JS</h4>
+                            <div id="jsSecretsList" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- Secrets will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classified Endpoints Tab -->
+                <div id="classifiedTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-orange-400">Classified Endpoints</h3>
+                            <button onclick="exportData('classified_endpoints')" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                        
+                        <div id="classifiedEndpointsList" class="space-y-4 max-h-96 overflow-y-auto">
+                            <!-- Classified endpoints will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations Tab -->
+                <div id="recommendationsTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <h3 class="text-xl font-bold mb-4 text-red-400">Testing Recommendations</h3>
+                        <div id="recommendationsList" class="space-y-6">
+                            <!-- Recommendations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Harvesting Tab -->
+                <div id="harvestingTab" class="tab-pane hidden">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-emerald-400">Harvested Endpoint</h3>
+                            <div class="flex space-x-2">
+                                <button onclick="viewAllHarvested()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                    <i class="fas fa-eye mr-2"></i>View All
+                                </button>
+                                <button onclick="exportHarvested()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                    <i class="fas fa-download mr-2"></i>Export
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="harvestingInfo">
+                            <!-- Harvesting info will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="mt-8 flex justify-center space-x-4">
+                <button onclick="exportReport('json')" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                    <i class="fas fa-file-code mr-2"></i>Export JSON
+                </button>
+                <button onclick="exportReport('txt')" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                    <i class="fas fa-file-alt mr-2"></i>Export TXT
+                </button>
+                <button onclick="copyAllResults()" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition">
+                    <i class="fas fa-copy mr-2"></i>Copy Summary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scanId = '{{ scan_id }}';
+        let allEndpoints = [];
+        let currentFilter = 'all';
+        
+        // Load scan results
+        function loadScanResults() {
+            fetch(`/api/scan_results/${scanId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Check if there's an error in the response
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    // Check if scan is still running
+                    if (data.status === 'running') {
+                        document.getElementById('loading').innerHTML = `
+                            <div class="text-center py-12">
+                                <i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
+                                <h3 class="text-xl font-bold text-blue-400 mb-2">Scan in Progress</h3>
+                                <p class="text-gray-400 mb-4">The scan is still running. Please wait...</p>
+                                <p class="text-sm text-gray-500">Domain: ${data.domain}</p>
+                                <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                                </button>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Hide loading, show results
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('results').classList.remove('hidden');
+                    
+                    // Update summary
+                    document.getElementById('subdomainsCount').textContent = data.selected_subdomains?.length || 0;
+                    document.getElementById('liveUrlsCount').textContent = data.live_urls?.length || 0;
+                    document.getElementById('endpointsCount').textContent = data.katana_urls?.length || 0;
+                    document.getElementById('jsFilesCount').textContent = data.js_files?.length || 0;
+                    document.getElementById('highPriorityCount').textContent = data.scan_summary?.high_priority_endpoints || 0;
+                    document.getElementById('secretsCount').textContent = data.scan_summary?.secrets_found || 0;
+                    document.getElementById('apiEndpointsCount').textContent = data.scan_summary?.api_endpoints_found || 0;
+                    
+                    // Update harvesting stats if enabled
+                    if (data.endpoint_harvesting && data.endpoint_harvesting.enabled) {
+                        document.getElementById('harvestingStats').classList.remove('hidden');
+                        document.getElementById('harvestedCount').textContent = data.endpoint_harvesting.harvested_count || 0;
+                        document.getElementById('totalHarvested').textContent = data.endpoint_harvesting.total_harvested || 0;
+                    }
+                    
+                    // Update domain info
+                    document.getElementById('domainName').textContent = data.domain || 'Unknown';
+                    document.getElementById('scanMode').textContent = data.scan_details?.scan_mode || 'Unknown';
+                    document.getElementById('jsAnalysis').textContent = data.scan_details?.js_analysis || 'Unknown';
+                    const harvestingStatus = data.scan_details?.endpoint_harvesting === 'on' ? 'Enabled' : 'Disabled';
+                    document.getElementById('endpointHarvesting').textContent = harvestingStatus;
+                    document.getElementById('scanTimestamp').textContent = data.timestamp || 'Unknown';
+                    
+                    // Load selected subdomains table
+                    const subdomainsTable = document.getElementById('subdomainsTable');
+                    if (data.selected_subdomains && data.selected_subdomains.length > 0) {
+                        data.selected_subdomains.forEach((subdomain, index) => {
+                            const row = document.createElement('tr');
+                            row.className = 'border-b border-gray-700';
+                            row.innerHTML = `
+                                <td class="py-3">${index + 1}</td>
+                                <td class="py-3 font-mono">${subdomain}</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 bg-green-900/30 text-green-400 rounded text-sm">
+                                        Selected
+                                    </span>
+                                </td>
+                            `;
+                            subdomainsTable.appendChild(row);
+                        });
+                    } else {
+                        subdomainsTable.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="py-8 text-center text-gray-500">
+                                    <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                    <p>No subdomains selected for this scan</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Load live URLs
+                    const liveUrlsList = document.getElementById('liveUrlsList');
+                    if (data.live_urls && data.live_urls.length > 0) {
+                        data.live_urls.forEach((url, index) => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 bg-gray-900 rounded-lg';
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center">
+                                    <div class="text-green-300 truncate font-mono text-sm">${url}</div>
+                                    <div class="flex space-x-2">
+                                        <a href="${url}" target="_blank" class="text-blue-400 hover:text-blue-300" title="Open URL">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        <button onclick="copyToClipboard('${url}')" class="text-green-400 hover:text-green-300" title="Copy URL">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            liveUrlsList.appendChild(div);
+                        });
+                    } else {
+                        liveUrlsList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                <p>No live URLs found</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Load endpoints
+                    const endpointsList = document.getElementById('endpointsList');
+                    if (data.katana_urls && data.katana_urls.length > 0) {
+                        data.katana_urls.forEach((url, index) => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 bg-gray-900 rounded-lg';
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center">
+                                    <div class="text-yellow-300 truncate font-mono text-sm">${url}</div>
+                                    <div class="flex space-x-2">
+                                        <a href="${url}" target="_blank" class="text-blue-400 hover:text-blue-300" title="Open URL">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        <button onclick="copyToClipboard('${url}')" class="text-green-400 hover:text-green-300" title="Copy URL">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            endpointsList.appendChild(div);
+                        });
+                    } else {
+                        endpointsList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                <p>No endpoints discovered</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Load JS files
+                    const jsFilesList = document.getElementById('jsFilesList');
+                    if (data.js_files && data.js_files.length > 0) {
+                        const jsFiles = data.js_files || [];
+                        const interestingJsFiles = data.interesting_js_files || [];
+                        const jsMapFiles = jsFiles.filter(f => f.endsWith('.js.map')).length;
+                        
+                        document.getElementById('totalJsFiles').textContent = jsFiles.length;
+                        document.getElementById('interestingJsFiles').textContent = interestingJsFiles.length;
+                        document.getElementById('jsMapFiles').textContent = jsMapFiles;
+                        
+                        // Show interesting JS files
+                        interestingJsFiles.forEach((jsFile, index) => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 bg-gray-900 rounded-lg';
+                            const isMapFile = jsFile.endsWith('.js.map');
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center">
+                                    <div class="${isMapFile ? 'text-cyan-300' : 'text-purple-300'} truncate font-mono text-sm">
+                                        ${jsFile}
+                                        ${isMapFile ? ' <span class="text-xs bg-cyan-900/30 text-cyan-400 px-2 py-1 rounded">MAP</span>' : ''}
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <a href="${jsFile}" target="_blank" class="text-blue-400 hover:text-blue-300" title="Open JS File">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                        <button onclick="copyToClipboard('${jsFile}')" class="text-green-400 hover:text-green-300" title="Copy URL">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            jsFilesList.appendChild(div);
+                        });
+                    } else {
+                        jsFilesList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                <p>No JavaScript files found</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Load JS Analysis Results
+                    if (data.js_analysis) {
+                        const jsAnalysis = data.js_analysis;
+                        
+                        // Update stats
+                        document.getElementById('jsInternalUrls').textContent = jsAnalysis.internal_urls?.length || 0;
+                        document.getElementById('jsApiUrls').textContent = jsAnalysis.api_urls?.length || 0;
+                        document.getElementById('jsSecrets').textContent = jsAnalysis.secrets?.length || 0;
+                        
+                        // Load internal URLs
+                        const internalUrlsList = document.getElementById('jsInternalUrlsList');
+                        if (jsAnalysis.internal_urls && jsAnalysis.internal_urls.length > 0) {
+                            jsAnalysis.internal_urls.forEach((url, index) => {
+                                const div = document.createElement('div');
+                                div.className = 'p-3 bg-gray-900 rounded-lg';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-green-300 truncate font-mono text-sm">${url}</div>
+                                        <div class="flex space-x-2">
+                                            <a href="${url}" target="_blank" class="text-blue-400 hover:text-blue-300" title="Open URL">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            <button onclick="copyToClipboard('${url}')" class="text-green-400 hover:text-green-300" title="Copy URL">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                internalUrlsList.appendChild(div);
+                            });
+                        } else {
+                            internalUrlsList.innerHTML = `
+                                <div class="text-center py-4 text-gray-500">
+                                    <p>No internal URLs found in JS files</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // Load API endpoints
+                        const apiUrlsList = document.getElementById('jsApiUrlsList');
+                        if (jsAnalysis.api_urls && jsAnalysis.api_urls.length > 0) {
+                            jsAnalysis.api_urls.forEach((url, index) => {
+                                const div = document.createElement('div');
+                                div.className = 'p-3 bg-gray-900 rounded-lg';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-yellow-300 truncate font-mono text-sm">${url}</div>
+                                        <div class="flex space-x-2">
+                                            <a href="${url}" target="_blank" class="text-blue-400 hover:text-blue-300" title="Open URL">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            <button onclick="copyToClipboard('${url}')" class="text-green-400 hover:text-green-300" title="Copy URL">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                apiUrlsList.appendChild(div);
+                            });
+                        } else {
+                            apiUrlsList.innerHTML = `
+                                <div class="text-center py-4 text-gray-500">
+                                    <p>No API endpoints found in JS files</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // Load secrets
+                        const secretsList = document.getElementById('jsSecretsList');
+                        if (jsAnalysis.secrets && jsAnalysis.secrets.length > 0) {
+                            jsAnalysis.secrets.forEach((secret, index) => {
+                                const [secretText, source] = secret;
+                                const div = document.createElement('div');
+                                div.className = 'p-3 bg-gray-900 rounded-lg';
+                                div.innerHTML = `
+                                    <div class="mb-2">
+                                        <div class="text-red-300 text-sm font-mono break-all">
+                                            ${secretText.substring(0, 100)}${secretText.length > 100 ? '...' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm text-gray-400">
+                                        <div class="truncate">Source: ${source}</div>
+                                        <button onclick="copyToClipboard('${secretText}')" class="text-green-400 hover:text-green-300" title="Copy Secret">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                `;
+                                secretsList.appendChild(div);
+                            });
+                        } else {
+                            secretsList.innerHTML = `
+                                <div class="text-center py-4 text-gray-500">
+                                    <p>No secrets found in JS files</p>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // Load classified endpoints
+                    if (data.classified_endpoints) {
+                        allEndpoints = data.classified_endpoints;
+                        displayClassifiedEndpoints(allEndpoints);
+                    }
+                    
+                    // Show recommendations
+                    const recommendationsList = document.getElementById('recommendationsList');
+                    if (data.testing_recommendations && data.testing_recommendations.length > 0) {
+                        data.testing_recommendations.forEach((endpoint, index) => {
+                            const div = document.createElement('div');
+                            div.className = 'p-4 bg-gray-900 rounded-lg';
+                            
+                            let recommendationsHtml = '';
+                            if (endpoint.testing_recommendations) {
+                                endpoint.testing_recommendations.forEach(rec => {
+                                    const riskColor = rec.risk_level === 'CRITICAL' ? 'red' : 
+                                                     rec.risk_level === 'HIGH' ? 'orange' : 'yellow';
+                                    recommendationsHtml += `
+                                        <div class="mb-3 p-3 bg-gray-800 rounded-lg">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <h5 class="font-bold text-white">${rec.vulnerability}</h5>
+                                                <span class="px-3 py-1 bg-${riskColor}-900/30 text-${riskColor}-400 rounded text-sm">
+                                                    ${rec.risk_level}
+                                                </span>
+                                            </div>
+                                            <p class="text-gray-300 mb-2">${rec.description}</p>
+                                            <p class="text-sm text-gray-400 mb-2">Confidence: ${rec.confidence}%</p>
+                                            <p class="text-sm text-cyan-400 mb-2">${rec.why}</p>
+                                            <div class="text-sm">
+                                                <div class="text-gray-400 mb-1">Test Cases:</div>
+                                                <ul class="list-disc list-inside text-gray-300">
+                                                    ${rec.test_cases.map(tc => `<li>${tc}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                            <div class="mt-2 text-sm text-green-400">
+                                                Tools: ${rec.tools.join(', ')}
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                            }
+                            
+                            div.innerHTML = `
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="text-lg font-bold text-white">${index + 1}. ${endpoint.url}</h4>
+                                    <span class="px-3 py-1 ${getPriorityClass(endpoint.classification.priority)}">
+                                        ${endpoint.classification.priority}
+                                    </span>
+                                </div>
+                                <p class="text-gray-300 mb-3">
+                                    Risk Score: ${endpoint.classification.risk_score} | 
+                                    Categories: ${endpoint.classification.categories.join(', ')}
+                                </p>
+                                ${recommendationsHtml}
+                            `;
+                            recommendationsList.appendChild(div);
+                        });
+                    } else {
+                        recommendationsList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                <p>No testing recommendations available</p>
+                                <p class="text-sm mt-2">Consider testing the discovered endpoints for common vulnerabilities</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Load harvesting info
+                    const harvestingInfo = document.getElementById('harvestingInfo');
+                    if (data.endpoint_harvesting && data.endpoint_harvesting.enabled) {
+                        harvestingInfo.innerHTML = `
+                            <div class="bg-gray-900 rounded-lg p-6 mb-4">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="text-center p-4 bg-emerald-900/30 border border-emerald-700 rounded-lg">
+                                        <div class="text-2xl font-bold text-emerald-400">${data.endpoint_harvesting.harvested_count}</div>
+                                        <div class="text-sm text-gray-400">Endpoints Harvested</div>
+                                    </div>
+                                    <div class="text-center p-4 bg-amber-900/30 border border-amber-700 rounded-lg">
+                                        <div class="text-2xl font-bold text-amber-400">${data.endpoint_harvesting.total_harvested}</div>
+                                        <div class="text-sm text-gray-400">Total in Wordlist</div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-300 mb-2">
+                                    <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                                    Harvested endpoints are saved to the wordlist for use in future scans.
+                                </p>
+                                <p class="text-gray-300">
+                                    <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                                    This feature enriches your endpoint wordlist over time, improving reconnaissance accuracy.
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        harvestingInfo.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-database text-2xl mb-2"></i>
+                                <h4 class="text-lg font-bold text-gray-400 mb-2">Endpoint Harvesting Disabled</h4>
+                                <p class="mb-4">Endpoint harvesting was not enabled for this scan.</p>
+                                <p class="text-sm text-gray-500">
+                                    Enable "Smart Endpoint Harvesting" in the scan configuration to automatically collect discovered endpoints.
+                                </p>
+                            </div>
+                        `;
+                    }
+                    
+                })
+                .catch(error => {
+                    console.error('Error loading scan results:', error);
+                    showError(error.message);
+                });
+        }
+        
+        function displayClassifiedEndpoints(endpoints) {
+            const container = document.getElementById('classifiedEndpointsList');
+            container.innerHTML = '';
+            
+            let filteredEndpoints = endpoints;
+            if (currentFilter !== 'all') {
+                filteredEndpoints = endpoints.filter(ep => 
+                    ep.classification.priority.toLowerCase() === currentFilter
+                );
+            }
+            
+            if (filteredEndpoints.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-info-circle text-2xl mb-2"></i>
+                        <p>No ${currentFilter === 'all' ? '' : currentFilter} endpoints found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredEndpoints.forEach((endpoint, index) => {
+                const div = document.createElement('div');
+                div.className = 'p-4 bg-gray-900 rounded-lg';
+                
+                let paramsHtml = '';
+                if (endpoint.classification.sensitive_params && endpoint.classification.sensitive_params.length > 0) {
+                    paramsHtml = `
+                        <div class="mt-2">
+                            <div class="text-sm text-gray-400">Sensitive Parameters:</div>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                ${endpoint.classification.sensitive_params.map(p => 
+                                    `<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-xs">${p}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-lg font-bold text-white truncate">${endpoint.url}</h4>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-3 py-1 ${getPriorityClass(endpoint.classification.priority)} rounded text-sm">
+                                ${endpoint.classification.priority}
+                            </span>
+                            <span class="px-3 py-1 bg-blue-900/30 text-blue-400 rounded text-sm">
+                                Score: ${endpoint.classification.risk_score}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="flex flex-wrap gap-1">
+                            ${endpoint.classification.categories.map(cat => 
+                                `<span class="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">${cat}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    ${paramsHtml}
+                    <div class="mt-3 flex justify-between items-center">
+                        <a href="${endpoint.url}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>Open
+                        </a>
+                        <div class="flex space-x-2">
+                            <button onclick="copyToClipboard('${endpoint.url}')" class="text-green-400 hover:text-green-300 text-sm">
+                                <i class="fas fa-copy mr-1"></i>Copy URL
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function filterEndpoints(filter) {
+            currentFilter = filter;
+            displayClassifiedEndpoints(allEndpoints);
+            
+            // Update button styles
+            document.querySelectorAll('#classifiedTab button').forEach(btn => {
+                btn.classList.remove('bg-blue-700', 'bg-red-700', 'bg-orange-700', 'bg-yellow-700', 'bg-green-700');
+                btn.classList.add('bg-gray-700');
+            });
+            
+            const activeButton = document.querySelector(`#classifiedTab button[onclick="filterEndpoints('${filter}')"]`);
+            if (activeButton) {
+                activeButton.classList.remove('bg-gray-700');
+                const color = filter === 'all' ? 'blue' : 
+                             filter === 'critical' ? 'red' :
+                             filter === 'high' ? 'orange' :
+                             filter === 'medium' ? 'yellow' : 'green';
+                activeButton.classList.add(`bg-${color}-700`);
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message || 'Failed to load scan results. The scan may have failed or been deleted.';
+        }
+        
+        function getPriorityClass(priority) {
+            switch(priority.toLowerCase()) {
+                case 'critical': return 'bg-red-900/30 text-red-400';
+                case 'high': return 'bg-orange-900/30 text-orange-400';
+                case 'medium': return 'bg-yellow-900/30 text-yellow-400';
+                default: return 'bg-green-900/30 text-green-400';
+            }
+        }
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-400');
+                    btn.classList.add('text-gray-400');
+                });
+                button.classList.add('border-blue-500', 'text-blue-400');
+                button.classList.remove('text-gray-400');
+                
+                // Show selected tab content
+                const tabName = button.getAttribute('data-tab');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            });
+        });
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Swal.fire({
+                    title: 'Copied!',
+                    text: 'Text copied to clipboard',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to copy to clipboard',
+                    icon: 'error',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
+        
+        function copyAllResults() {
+            const results = {
+                domain: document.getElementById('domainName').textContent,
+                selected_subdomains: document.getElementById('subdomainsCount').textContent,
+                live_urls: document.getElementById('liveUrlsCount').textContent,
+                endpoints: document.getElementById('endpointsCount').textContent,
+                js_files: document.getElementById('jsFilesCount').textContent,
+                high_priority: document.getElementById('highPriorityCount').textContent,
+                secrets: document.getElementById('secretsCount').textContent,
+                api_endpoints: document.getElementById('apiEndpointsCount').textContent,
+                timestamp: document.getElementById('scanTimestamp').textContent
+            };
+            
+            const summary = `Scan Results Summary:
+Domain: ${results.domain}
+Selected Subdomains: ${results.selected_subdomains}
+Live URLs Found: ${results.live_urls}
+Endpoints Discovered: ${results.endpoints}
+JS Files Found: ${results.js_files}
+High Priority Endpoints: ${results.high_priority}
+Secrets Found: ${results.secrets}
+API Endpoints: ${results.api_endpoints}
+Scan Time: ${results.timestamp}`;
+            
+            copyToClipboard(summary);
+        }
+        
+        function exportData(type) {
+            window.open(`/api/export_category/${scanId}/${type}`, '_blank');
+        }
+        
+        function exportReport(format) {
+            window.open(`/api/export/${scanId}/${format}`, '_blank');
+        }
+        
+        function viewAllHarvested() {
+            window.open('/api/export_harvested_endpoints', '_blank');
+        }
+        
+        function exportHarvested() {
+            window.open('/api/export_harvested_endpoints', '_blank');
+        }
+        
+        // Load results when page loads
+        document.addEventListener('DOMContentLoaded', loadScanResults);
+    </script>
+</body>
+</html>
