@@ -331,20 +331,132 @@ def get_dashboard_stats():
             stats['total_secrets_found'] += summary.get('secrets_found', 0)
             stats['total_api_endpoints'] += summary.get('api_endpoints_found', 0)
             
-            # Add to recent scans
+            # Add to recent scans with enhanced details
             stats['recent_scans'].append({
                 'scan_id': list(scan_results.keys())[list(scan_results.values()).index(scan_data)],
                 'domain': scan_data.get('domain', ''),
                 'timestamp': scan_data.get('timestamp', ''),
                 'endpoints_count': summary.get('endpoints_count', 0),
-                'high_confidence_patterns': summary.get('high_confidence_patterns', 0)
+                'high_confidence_patterns': summary.get('high_confidence_patterns', 0),
+                'api_endpoints_found': summary.get('api_endpoints_found', 0),
+                'secrets_found': summary.get('secrets_found', 0),
+                'js_files_count': summary.get('js_files_count', 0),
+                'live_urls_count': summary.get('live_urls_count', 0),
+                'selected_subdomains_count': summary.get('selected_subdomains_count', 0)
             })
         
         # Sort recent scans by timestamp
         stats['recent_scans'].sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-        stats['recent_scans'] = stats['recent_scans'][:10]
+        stats['recent_scans'] = stats['recent_scans'][:20]  # Get more scans for dashboard
         
         return stats
+    
+    try:
+        conn = sqlite3.connect(DASHBOARD_DB_FILE)
+        cursor = conn.cursor()
+        
+        # Get total scans
+        cursor.execute('SELECT COUNT(*) FROM scans')
+        stats['total_scans'] = cursor.fetchone()[0]
+        
+        # Get unique domains
+        cursor.execute('SELECT COUNT(DISTINCT domain) FROM scans')
+        stats['total_domains'] = cursor.fetchone()[0]
+        
+        # Get aggregated statistics
+        cursor.execute('''
+            SELECT 
+                SUM(endpoints_count),
+                SUM(secrets_found),
+                SUM(api_endpoints_found)
+            FROM scans
+        ''')
+        row = cursor.fetchone()
+        if row:
+            stats['total_endpoints'] = row[0] or 0
+            stats['total_secrets_found'] = row[1] or 0
+            stats['total_api_endpoints'] = row[2] or 0
+        
+        # Get recent scans with enhanced details
+        cursor.execute('''
+            SELECT scan_id, domain, end_time, endpoints_count, 
+                   high_confidence_patterns, api_endpoints_found,
+                   secrets_found, js_files_count, live_urls_count,
+                   selected_subdomains_count
+            FROM scans 
+            ORDER BY end_time DESC 
+            LIMIT 20
+        ''')
+        for row in cursor.fetchall():
+            stats['recent_scans'].append({
+                'scan_id': row[0],
+                'domain': row[1],
+                'timestamp': row[2],
+                'endpoints_count': row[3] or 0,
+                'high_confidence_patterns': row[4] or 0,
+                'api_endpoints_found': row[5] or 0,
+                'secrets_found': row[6] or 0,
+                'js_files_count': row[7] or 0,
+                'live_urls_count': row[8] or 0,
+                'selected_subdomains_count': row[9] or 0
+            })
+        
+        # Get confidence distribution
+        cursor.execute('''
+            SELECT confidence_range, SUM(count)
+            FROM classification_stats
+            GROUP BY confidence_range
+        ''')
+        for row in cursor.fetchall():
+            range_name = row[0]
+            count = row[1]
+            if 'Strong' in range_name:
+                stats['confidence_distribution']['strong'] += count
+            elif 'Good' in range_name:
+                stats['confidence_distribution']['good'] += count
+            elif 'Moderate' in range_name:
+                stats['confidence_distribution']['moderate'] += count
+            elif 'Weak' in range_name:
+                stats['confidence_distribution']['weak'] += count
+            elif 'Minimal' in range_name:
+                stats['confidence_distribution']['minimal'] += count
+        
+        # Get top categories
+        cursor.execute('''
+            SELECT category, SUM(count)
+            FROM endpoint_categories
+            GROUP BY category
+            ORDER BY SUM(count) DESC
+            LIMIT 10
+        ''')
+        for row in cursor.fetchall():
+            stats['top_categories'].append({
+                'category': row[0],
+                'count': row[1]
+            })
+        
+        # Get scan timeline (last 30 days)
+        cursor.execute('''
+            SELECT DATE(end_time), COUNT(*)
+            FROM scans
+            WHERE end_time >= DATE('now', '-30 days')
+            GROUP BY DATE(end_time)
+            ORDER BY DATE(end_time)
+        ''')
+        for row in cursor.fetchall():
+            stats['scan_timeline'].append({
+                'date': row[0],
+                'count': row[1]
+            })
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"Error getting dashboard stats: {e}")
+    
+    return stats
+        
+        
     
     try:
         conn = sqlite3.connect(DASHBOARD_DB_FILE)
@@ -3050,6 +3162,14 @@ def scan_exists(scan_id):
     """Check if a scan exists"""
     exists = scan_id in active_scans or scan_id in scan_results
     return jsonify({'exists': exists})
+    
+@app.route('/api/scan/<scan_id>/details')
+def get_scan_details(scan_id):
+    """Get detailed information about a specific scan"""
+    if scan_id not in scan_results:
+        return jsonify({'error': 'Scan not found'}), 404
+    
+    return jsonify(scan_results[scan_id])
 
 # =============================
 # EXPORT ROUTES
@@ -5442,51 +5562,20 @@ with open('templates/dashboard_scan.html', 'w') as f:
 if __name__ == '__main__':
     print("""
     ╔══════════════════════════════════════════════════════════════════════════════╗
-    ║                    WEB RECONNAISSANCE FRAMEWORK                             ║
-    ║                     - EDUCATIONAL EDITION -                                 ║
+    ║                                     MERAGLIM				   ║
+    ║			          WEB RECONNAISSANCE FRAMEWORK                     ║
+    ║                                                                              ║
     ╚══════════════════════════════════════════════════════════════════════════════╝
     
-    📊 DASHBOARD STATUS: ENABLED | DATA SAVING: """ + ("ENABLED" if DASHBOARD_SAVE_TO_DB else "DISABLED") + """
-    🔍 By: Cod3pont1f | Version: 2.0 | Professional Edition
+    🔍 By: Cod3pont1f | Version: 2.0
     
     ⚠️  IMPORTANT EDUCATIONAL NOTES:
     ════════════════════════════════════════════════════════════════════════
     1. This tool performs STATIC PATTERN ANALYSIS for reconnaissance
     2. It finds investigation starting points, NOT vulnerabilities
-    3. Higher confidence percentages mean "more patterns matched", NOT "exploitable"
+    3. Higher confidence percentages mean "more patterns matched", MAY NOT "exploitable"
     4. ALL findings require 100% MANUAL VERIFICATION
     5. Expected false positive rate: 30-50% for pattern-based detection
-    
-    🎯 TOOL PURPOSE:
-    ════════════════════════════════════════════════════════════════════════
-    • Learn about web application structure patterns
-    • Find potential investigation targets
-    • Understand pattern matching in web apps
-    • Practice manual verification skills
-    
-    📊 DASHBOARD FEATURES:
-    ════════════════════════════════════════════════════════════════════════
-    • Professional statistics visualization
-    • Pattern match confidence analysis
-    • Top pattern categories overview
-    • Recent scans with investigation priorities
-    • Scan-specific analysis dashboards
-    • Educational information throughout
-    
-    ⚙️  CONFIDENCE INTERPRETATION:
-    ════════════════════════════════════════════════════════════════════════
-    • 80-100%: Strong pattern match - prioritize investigation
-    • 60-79%: Good pattern match - consider for investigation
-    • 40-59%: Moderate pattern match - investigate if time permits
-    • 20-39%: Weak pattern match - low priority
-    • 0-19%: Minimal pattern match - baseline investigation
-    
-    ⚠️  ETHICAL USE REQUIREMENTS:
-    ════════════════════════════════════════════════════════════════════════
-    • Only scan systems you own or have explicit permission to test
-    • Respect rate limits and terms of service
-    • Use findings for educational purposes only
-    • Report discovered issues responsibly
     
     🚀 FEATURES SUMMARY:
     ════════════════════════════════════════════════════════════════════════
@@ -5497,9 +5586,8 @@ if __name__ == '__main__':
     5. Endpoint pattern classification with professional confidence levels
     6. Investigation suggestions based on pattern matching
     7. Pattern learning for future reconnaissance
-    8. Comprehensive professional dashboard with visualizations
+    8. Comprehensive professional results export
     
-    📊 Access Dashboard: http://localhost:5000/dashboard
     🚀 Starting server on http://localhost:5000
     """)
 
