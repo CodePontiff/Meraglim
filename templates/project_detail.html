@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.name }} - Recon Framework</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,.1);
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .endpoint-row {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            transition: background-color 0.2s;
+        }
+        .endpoint-row:hover {
+            background-color: #f8f9fa;
+        }
+        .priority-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .priority-critical { background-color: #dc3545; color: white; }
+        .priority-high { background-color: #fd7e14; color: white; }
+        .priority-medium { background-color: #ffc107; color: black; }
+        .priority-low { background-color: #28a745; color: white; }
+        .confidence-bar {
+            height: 6px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .confidence-high { background-color: #28a745; }
+        .confidence-medium { background-color: #ffc107; }
+        .confidence-low { background-color: #dc3545; }
+        .tab-content {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+        }
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search"></i> Recon Framework
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/projects">Projects</a>
+                <a class="nav-link" href="/">New Scan</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>{{ project.name }}</h1>
+                <p class="text-muted">
+                    <i class="fas fa-globe"></i> {{ project.domain }}
+                    <span class="ms-3">
+                        <i class="fas fa-calendar"></i> {{ project.created_at[:10] }}
+                    </span>
+                    <span class="ms-3">
+                        Status: 
+                        {% if project.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                        {% elif project.status == 'running' %}
+                        <span class="badge bg-primary">Running</span>
+                        {% elif project.status == 'failed' %}
+                        <span class="badge bg-danger">Failed</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ project.status|title }}</span>
+                        {% endif %}
+                    </span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number text-primary">{{ stats.total_endpoints }}</div>
+                    <div class="text-muted">Total Endpoints</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number text-success">{{ stats.verified }}</div>
+                    <div class="text-muted">Verified</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number text-warning">
+                        {{ stats.by_priority.get('HIGH', 0) + stats.by_priority.get('CRITICAL', 0) }}
+                    </div>
+                    <div class="text-muted">High/Critical</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number text-info">
+                        {{ stats.recommendations|length }}
+                    </div>
+                    <div class="text-muted">Vulnerability Types</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Priority Distribution -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Priority Distribution</h5>
+                        <div class="row mt-3">
+                            {% for priority, count in stats.by_priority.items() %}
+                            <div class="col">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="priority-badge priority-{{ priority|lower }} me-2">
+                                        {{ priority }}
+                                    </span>
+                                    <span class="fw-bold">{{ count }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    {% set percentage = (count / stats.total_endpoints * 100) if stats.total_endpoints > 0 else 0 %}
+                                    <div class="progress-bar priority-{{ priority|lower }}" 
+                                         role="progressbar" 
+                                         style="width: {{ percentage }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="endpoints-tab" data-bs-toggle="tab" 
+                        data-bs-target="#endpoints" type="button" role="tab">
+                    <i class="fas fa-link"></i> Endpoints ({{ endpoints|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" 
+                        data-bs-target="#recommendations" type="button" role="tab">
+                    <i class="fas fa-bug"></i> Testing Recommendations
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="projectTabsContent">
+            <!-- Endpoints Tab -->
+            <div class="tab-pane fade show active" id="endpoints" role="tabpanel">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="endpointSearch" 
+                           placeholder="Search endpoints...">
+                </div>
+                
+                <div id="endpointsList">
+                    {% for endpoint in endpoints %}
+                    <div class="endpoint-row" data-priority="{{ endpoint.priority }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="priority-badge priority-{{ endpoint.priority|lower }} me-2">
+                                        {{ endpoint.priority }}
+                                    </span>
+                                    <span class="badge bg-info me-2">
+                                        {{ endpoint.method or 'GET' }}
+                                    </span>
+                                    <span class="badge {% if endpoint.status_code == 200 %}bg-success{% elif endpoint.status_code == 404 %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ endpoint.status_code or 'N/A' }}
+                                    </span>
+                                    {% if endpoint.verified %}
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-check"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <h6 class="mb-1">
+                                    <a href="{{ endpoint.url }}" target="_blank" class="text-decoration-none">
+                                        {{ endpoint.url }}
+                                    </a>
+                                </h6>
+                                {% if endpoint.title %}
+                                <p class="text-muted small mb-1">{{ endpoint.title }}</p>
+                                {% endif %}
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="text-muted small me-3">
+                                        <i class="fas fa-weight-hanging"></i> {{ endpoint.content_length }}B
+                                    </span>
+                                    {% if endpoint.categories %}
+                                    <span class="text-muted small me-3">
+                                        <i class="fas fa-tags"></i> {{ endpoint.categories }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="text-muted small">
+                                        <i class="fas fa-chart-line"></i> Score: {{ endpoint.risk_score }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small">Confidence:</span>
+                                    <span class="fw-bold">{{ endpoint.verification_confidence or 0 }}%</span>
+                                </div>
+                                <div class="confidence-bar">
+                                    {% set confidence = endpoint.verification_confidence or 0 %}
+                                    {% if confidence >= 70 %}
+                                    {% set confidence_class = 'confidence-high' %}
+                                    {% elif confidence >= 40 %}
+                                    {% set confidence_class = 'confidence-medium' %}
+                                    {% else %}
+                                    {% set confidence_class = 'confidence-low' %}
+                                    {% endif %}
+                                    <div class="confidence-fill {{ confidence_class }}" 
+                                         style="width: {{ confidence }}%"></div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary view-recommendations" 
+                                            data-endpoint-id="{{ endpoint.id }}">
+                                        <i class="fas fa-eye"></i> View Recommendations
+                                        {% if endpoint.recommendation_count %}
+                                        <span class="badge bg-primary ms-1">{{ endpoint.recommendation_count }}</span>
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if not endpoints %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No endpoints found</h5>
+                    <p class="text-muted">Try running a scan first.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Recommendations Tab -->
+            <div class="tab-pane fade" id="recommendations" role="tabpanel">
+                <div id="recommendationsContent">
+                    <p class="text-muted">Select an endpoint to view its testing recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommendation Modal -->
+    <div class="modal fade" id="recommendationsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Testing Recommendations</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div id="modalContent" class="d-none">
+                        <h6 id="endpointUrl" class="mb-3"></h6>
+                        <div id="recommendationsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('endpointSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.endpoint-row');
+            
+            rows.forEach(row => {
+                const url = row.querySelector('h6 a').textContent.toLowerCase();
+                const title = row.querySelector('.text-muted.small')?.textContent.toLowerCase() || '';
+                const matches = url.includes(searchTerm) || title.includes(searchTerm);
+                row.style.display = matches ? '' : 'none';
+            });
+        });
+        
+        // Filter by priority
+        const priorityFilter = document.getElementById('priorityFilter');
+        if (priorityFilter) {
+            priorityFilter.addEventListener('change', function(e) {
+                const selectedPriority = e.target.value;
+                const rows = document.querySelectorAll('.endpoint-row');
+                
+                rows.forEach(row => {
+                    const priority = row.dataset.priority;
+                    const matches = !selectedPriority || priority === selectedPriority;
+                    row.style.display = matches ? '' : 'none';
+                });
+            });
+        }
+        
+        // View recommendations
+        document.querySelectorAll('.view-recommendations').forEach(button => {
+            button.addEventListener('click', function() {
+                const endpointId = this.dataset.endpointId;
+                const endpointUrl = this.closest('.endpoint-row').querySelector('h6 a').textContent;
+                
+                // Update modal
+                document.getElementById('endpointUrl').textContent = endpointUrl;
+                document.getElementById('modalLoading').classList.remove('d-none');
+                document.getElementById('modalContent').classList.add('d-none');
+                
+                // Fetch recommendations
+                fetch(`/api/endpoint/${endpointId}/recommendations`)
+                    .then(r => r.json())
+                    .then(recommendations => {
+                        document.getElementById('modalLoading').classList.add('d-none');
+                        document.getElementById('modalContent').classList.remove('d-none');
+                        
+                        const container = document.getElementById('recommendationsList');
+                        container.innerHTML = '';
+                        
+                        if (recommendations.length === 0) {
+                            container.innerHTML = '<p class="text-muted">No specific testing recommendations for this endpoint.</p>';
+                            return;
+                        }
+                        
+                        recommendations.forEach(rec => {
+                            const card = document.createElement('div');
+                            card.className = 'card mb-3';
+                            
+                            // Determine badge color based on risk level
+                            let badgeClass = 'bg-secondary';
+                            if (rec.risk_level === 'CRITICAL') badgeClass = 'bg-danger';
+                            else if (rec.risk_level === 'HIGH') badgeClass = 'bg-warning';
+                            else if (rec.risk_level === 'MEDIUM') badgeClass = 'bg-info';
+                            else if (rec.risk_level === 'LOW') badgeClass = 'bg-success';
+                            
+                            // Confidence color
+                            let confColor = 'text-danger';
+                            if (rec.confidence >= 70) confColor = 'text-success';
+                            else if (rec.confidence >= 40) confColor = 'text-warning';
+                            
+                            card.innerHTML = `
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">${rec.vulnerability}</h6>
+                                        <span class="badge ${badgeClass}">${rec.risk_level}</span>
+                                    </div>
+                                    <p class="card-text small mb-2">${rec.description}</p>
+                                    <p class="card-text small text-muted mb-2">
+                                        <i class="fas fa-info-circle"></i> ${rec.why}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="small">Confidence: <span class="${confColor} fw-bold">${rec.confidence}%</span></span>
+                                        <span class="small">Tools: ${rec.tools?.join(', ') || 'Manual testing'}</span>
+                                    </div>
+                                    ${rec.test_cases ? `
+                                    <div class="mt-3">
+                                        <h7 class="small fw-bold">Test Cases:</h7>
+                                        <ul class="small mb-0">
+                                            ${rec.test_cases.map(tc => `<li><code>${tc}</code></li>`).join('')}
+                                        </ul>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                            container.appendChild(card);
+                        });
+                    });
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('recommendationsModal'));
+                modal.show();
+            });
+        });
+        
+        // Auto-refresh if scan is running
+        {% if project.status == 'running' %}
+        setTimeout(() => {
+            location.reload();
+        }, 5000);
+        {% endif %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Web Recon Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-400">
+                        <i class="fas fa-file-alt mr-2"></i>Scan Reports
+                    </h1>
+                    <p class="text-gray-400 mt-2">View and manage all scan reports</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="/" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="/dashboard" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Reports Info -->
+        <div class="bg-gray-800 rounded-xl p-6 mb-8">
+            <div class="text-center py-8">
+                <i class="fas fa-folder-open text-4xl text-blue-400 mb-4"></i>
+                <h3 class="text-xl font-bold text-blue-400 mb-2">Scan Reports</h3>
+                <p class="text-gray-400 mb-4">View detailed reports of all completed scans</p>
+                <p class="text-sm text-gray-500">In a full implementation, this page would show all scan reports with filtering and export options.</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-xl p-6 text-center">
+                <div class="bg-blue-500/20 p-4 rounded-full inline-block mb-4">
+                    <i class="fas fa-search text-blue-400 text-2xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">View Scan Details</h4>
+                <p class="text-gray-400 text-sm mb-4">Access detailed information about completed scans</p>
+                <a href="/dashboard" class="text-blue-400 hover:text-blue-300 inline-flex items-center">
+                    Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-6 text-center">
+                <div class="bg-green-500/20 p-4 rounded-full inline-block mb-4">
+                    <i class="fas fa-download text-green-400 text-2xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">Export Reports</h4>
+                <p class="text-gray-400 text-sm mb-4">Export scan results in various formats</p>
+                <p class="text-gray-500 text-sm">Available from individual scan details pages</p>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-6 text-center">
+                <div class="bg-purple-500/20 p-4 rounded-full inline-block mb-4">
+                    <i class="fas fa-history text-purple-400 text-2xl"></i>
+                </div>
+                <h4 class="text-lg font-bold mb-2">Scan History</h4>
+                <p class="text-gray-400 text-sm mb-4">Track all your reconnaissance activities</p>
+                <a href="/dashboard" class="text-purple-400 hover:text-purple-300 inline-flex items-center">
+                    View History <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Coming Soon Features -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <h3 class="text-xl font-bold mb-4 text-yellow-400">
+                <i class="fas fa-rocket mr-2"></i>Coming Soon Features
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-900 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="bg-blue-500/20 p-2 rounded mr-3">
+                            <i class="fas fa-filter text-blue-400"></i>
+                        </div>
+                        <h4 class="font-bold">Advanced Filtering</h4>
+                    </div>
+                    <p class="text-gray-400 text-sm">Filter reports by date, domain, findings, and more</p>
+                </div>
+                
+                <div class="p-4 bg-gray-900 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="bg-green-500/20 p-2 rounded mr-3">
+                            <i class="fas fa-chart-bar text-green-400"></i>
+                        </div>
+                        <h4 class="font-bold">Analytics Dashboard</h4>
+                    </div>
+                    <p class="text-gray-400 text-sm">Visualize scan data with charts and graphs</p>
+                </div>
+                
+                <div class="p-4 bg-gray-900 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="bg-purple-500/20 p-2 rounded mr-3">
+                            <i class="fas fa-share-alt text-purple-400"></i>
+                        </div>
+                        <h4 class="font-bold">Report Sharing</h4>
+                    </div>
+                    <p class="text-gray-400 text-sm">Share reports with team members or clients</p>
+                </div>
+                
+                <div class="p-4 bg-gray-900 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="bg-red-500/20 p-2 rounded mr-3">
+                            <i class="fas fa-bell text-red-400"></i>
+                        </div>
+                        <h4 class="font-bold">Notifications</h4>
+                    </div>
+                    <p class="text-gray-400 text-sm">Get notified when scans complete or findings are detected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

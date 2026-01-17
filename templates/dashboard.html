@@ -1,0 +1,990 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconnaissance Dashboard - Web Recon Framework</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+            --border-color: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        
+        .header-subtitle {
+            color: var(--gray-color);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary-color);
+        }
+        
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+        
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-icon {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-color);
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            height: 280px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .recent-scans {
+            margin-top: 20px;
+        }
+        
+        .scan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        
+        .scan-item:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-color);
+        }
+        
+        .scan-info h4 {
+            color: var(--dark-color);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .scan-info p {
+            color: var(--gray-color);
+            font-size: 12px;
+        }
+        
+        .scan-stats {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .stat-badge {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-badge.strong {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+        
+        .settings-panel {
+            margin-top: 24px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-left: 4px solid var(--primary-color);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .info-card strong {
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        
+        .info-card p {
+            color: var(--gray-color);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: var(--gray-color);
+            padding: 20px;
+            font-size: 13px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 24px;
+        }
+        
+        .footer strong {
+            color: var(--dark-color);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Loading animation */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--gray-color);
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="header-title">
+                <div class="header-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <h1>Reconnaissance Dashboard</h1>
+                    <div class="header-subtitle">Pattern Analysis & Investigation Overview</div>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/dashboard" class="btn btn-primary">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <div class="dashboard-content">
+            <!-- Overall Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-bar card-icon"></i>
+                        Overall Statistics
+                    </h2>
+                    <span class="tooltip">
+                        <i class="fas fa-info-circle" style="color: var(--gray-color);"></i>
+                        <span class="tooltip-text">These statistics represent pattern matches from reconnaissance scans, not vulnerability counts</span>
+                    </span>
+                </div>
+                <div class="stats-grid" id="overallStats">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-lightbulb"></i> Note:</strong>
+                    <p>Higher numbers indicate more patterns discovered. This helps prioritize manual investigation but does not measure security risk.</p>
+                </div>
+            </div>
+            
+            <!-- Pattern Match Confidence -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-bullseye card-icon"></i>
+                        Pattern Match Confidence
+                    </h2>
+                    <span class="tooltip">
+                        <i class="fas fa-info-circle" style="color: var(--gray-color);"></i>
+                        <span class="tooltip-text">Confidence percentages show pattern matching accuracy, not exploitability</span>
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-chart-pie"></i> Interpretation:</strong>
+                    <p>Higher confidence means more patterns matched from database. Use to prioritize investigation order.</p>
+                </div>
+            </div>
+            
+            <!-- Recent Scans -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-history card-icon"></i>
+                        Recent Scans
+                    </h2>
+                    <span class="stat-badge">{{ recent_scans|length }} scans</span>
+                </div>
+                <div class="recent-scans" id="recentScans">
+                    {% for scan in recent_scans %}
+                    <a href="/dashboard/scan/{{ scan.scan_id }}" style="text-decoration: none;">
+                        <div class="scan-item">
+                            <div class="scan-info">
+                                <h4>{{ scan.domain }}</h4>
+                                <p>{{ scan.timestamp }}</p>
+                            </div>
+                            <div class="scan-stats">
+                                <span class="stat-badge">{{ scan.endpoints_count }} patterns</span>
+                                <span class="stat-badge strong">{{ scan.high_confidence_patterns }} strong</span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% if not recent_scans %}
+                <div class="loading">
+                    <i class="fas fa-search" style="font-size: 32px; color: var(--gray-color); margin-bottom: 16px;"></i>
+                    <p>No scans yet. Start your first reconnaissance scan.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Top Categories -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-tags card-icon"></i>
+                        Top Pattern Categories
+                    </h2>
+                    <span class="tooltip">
+                        <i class="fas fa-info-circle" style="color: var(--gray-color);"></i>
+                        <span class="tooltip-text">Categories represent pattern types, not vulnerability types</span>
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-filter"></i> Usage:</strong>
+                    <p>Common pattern categories help understand application structure for manual investigation.</p>
+                </div>
+            </div>
+            
+            <!-- Dashboard Settings -->
+            <div class="card settings-panel">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-cog card-icon"></i>
+                        Dashboard Settings
+                    </h2>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--dark-color);">Save Data to Database</h4>
+                        <p style="color: var(--gray-color); font-size: 13px;">Store pattern analysis results for historical review</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="saveToDbToggle" {% if settings.save_to_db == 'true' %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--dark-color);">Clear All Data</h4>
+                        <p style="color: var(--gray-color); font-size: 13px;">Remove all stored reconnaissance patterns</p>
+                    </div>
+                    <button class="btn btn-secondary" id="clearDataBtn" style="font-size: 13px;">
+                        <i class="fas fa-trash-alt"></i> Clear Data
+                    </button>
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-graduation-cap"></i> Learning Purpose:</strong>
+                    <p>Data saving helps track reconnaissance patterns over time for educational analysis of web application structures.</p>
+                </div>
+            </div>
+            
+            <!-- Educational Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-info-circle card-icon"></i>
+                        Important Information
+                    </h2>
+                </div>
+                <div style="padding: 8px 0;">
+                    <div style="margin-bottom: 16px;">
+                        <strong style="color: var(--dark-color); font-size: 14px; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning-color);"></i> Tool Purpose
+                        </strong>
+                        <p style="color: var(--gray-color); font-size: 13px; line-height: 1.5;">
+                            This tool performs static pattern analysis for reconnaissance. It finds investigation starting points, not vulnerabilities.
+                        </p>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <strong style="color: var(--dark-color); font-size: 14px; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> Confidence Interpretation
+                        </strong>
+                        <p style="color: var(--gray-color); font-size: 13px; line-height: 1.5;">
+                            Higher percentages indicate more patterns matched from our database. They do NOT measure exploitability or security risk.
+                        </p>
+                    </div>
+                    <div>
+                        <strong style="color: var(--dark-color); font-size: 14px; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-user-check" style="color: var(--success-color);"></i> Verification Required
+                        </strong>
+                        <p style="color: var(--gray-color); font-size: 13px; line-height: 1.5;">
+                            100% manual verification required for all findings. Pattern matching ≠ vulnerability confirmation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Web Reconnaissance Framework - Educational Edition</strong></p>
+            <p>Pattern analysis for investigation prioritization | Manual verification always required</p>
+            <p style="margin-top: 8px; font-size: 12px; color: var(--gray-color);">
+                <i class="fas fa-exclamation-circle"></i> Use responsibly with proper authorization
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize dashboard data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            setupEventListeners();
+            updateOverallStatsPlaceholder();
+        });
+        
+        function updateOverallStatsPlaceholder() {
+            const statsContainer = document.getElementById('overallStats');
+            statsContainer.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p style="font-size: 12px; margin-top: 8px;">Loading statistics...</p>
+                </div>
+            `;
+        }
+        
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/stats');
+                if (!response.ok) throw new Error('Failed to load dashboard data');
+                
+                const data = await response.json();
+                
+                // Update overall statistics
+                updateOverallStats(data);
+                
+                // Create confidence distribution chart
+                createConfidenceChart(data.confidence_distribution);
+                
+                // Create categories chart if available
+                if (data.top_categories && data.top_categories.length > 0) {
+                    createCategoriesChart(data.top_categories);
+                }
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('overallStats').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--danger-color);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 12px;"></i>
+                        <p style="font-size: 14px;">Failed to load dashboard data</p>
+                        <button onclick="loadDashboardData()" class="btn btn-secondary" style="margin-top: 12px; font-size: 13px;">
+                            <i class="fas fa-redo"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateOverallStats(data) {
+            const statsContainer = document.getElementById('overallStats');
+            
+            const stats = [
+                { 
+                    label: 'Total Scans', 
+                    value: data.total_scans || 0, 
+                    icon: 'fas fa-search',
+                    color: 'var(--primary-color)',
+                    tooltip: 'Number of reconnaissance scans performed'
+                },
+                { 
+                    label: 'Unique Domains', 
+                    value: data.total_domains || 0, 
+                    icon: 'fas fa-globe',
+                    color: 'var(--success-color)',
+                    tooltip: 'Number of unique domains analyzed'
+                },
+                { 
+                    label: 'Patterns Found', 
+                    value: data.total_endpoints || 0, 
+                    icon: 'fas fa-sitemap',
+                    color: 'var(--warning-color)',
+                    tooltip: 'Total endpoint patterns discovered'
+                },
+                { 
+                    label: 'Strong Matches', 
+                    value: data.confidence_distribution?.strong || 0, 
+                    icon: 'fas fa-bullseye',
+                    color: 'var(--danger-color)',
+                    tooltip: 'Patterns with strong match confidence (80-100%)'
+                },
+                { 
+                    label: 'API Patterns', 
+                    value: data.total_api_endpoints || 0, 
+                    icon: 'fas fa-plug',
+                    color: 'var(--primary-color)',
+                    tooltip: 'API endpoint patterns discovered'
+                },
+                { 
+                    label: 'Secret Patterns', 
+                    value: data.total_secrets_found || 0, 
+                    icon: 'fas fa-key',
+                    color: 'var(--gray-color)',
+                    tooltip: 'Potential secret patterns found (require verification)'
+                }
+            ];
+            
+            statsContainer.innerHTML = stats.map(stat => `
+                <div class="stat-card tooltip">
+                    <div style="font-size: 20px; color: ${stat.color}; margin-bottom: 8px;">
+                        <i class="${stat.icon}"></i>
+                    </div>
+                    <div class="stat-number">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                    <span class="tooltip-text">${stat.tooltip}</span>
+                </div>
+            `).join('');
+        }
+        
+        function createConfidenceChart(distribution) {
+            const ctx = document.getElementById('confidenceChart').getContext('2d');
+            
+            const labels = ['Strong Match', 'Good Match', 'Moderate Match', 'Weak Match', 'Minimal Match'];
+            const data = [
+                distribution.strong || 0,
+                distribution.good || 0,
+                distribution.moderate || 0,
+                distribution.weak || 0,
+                distribution.minimal || 0
+            ];
+            
+            const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#6B7280'];
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: 'white',
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 11
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} patterns (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createCategoriesChart(categories) {
+            const ctx = document.getElementById('categoriesChart').getContext('2d');
+            
+            const labels = categories.map(cat => cat.category);
+            const data = categories.map(cat => cat.count);
+            
+            // Generate colors
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#EC4899', '#14B8A6', '#F97316', '#84CC16', '#06B6D4'
+            ];
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pattern Count',
+                        data: data,
+                        backgroundColor: colors.slice(0, categories.length),
+                        borderColor: 'white',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                maxRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function setupEventListeners() {
+            // Save to DB toggle
+            const saveToggle = document.getElementById('saveToDbToggle');
+            saveToggle.addEventListener('change', async function() {
+                const saveToDb = this.checked;
+                
+                try {
+                    const response = await fetch('/api/dashboard/settings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ save_to_db: saveToDb })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showNotification(result.message, 'success');
+                        if (saveToDb) {
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    } else {
+                        showNotification('Error updating settings: ' + result.error, 'error');
+                        this.checked = !saveToDb; // Revert toggle
+                    }
+                } catch (error) {
+                    console.error('Error updating settings:', error);
+                    showNotification('Error updating settings. Please check console for details.', 'error');
+                    this.checked = !saveToDb; // Revert toggle
+                }
+            });
+            
+            // Clear data button
+            const clearBtn = document.getElementById('clearDataBtn');
+            clearBtn.addEventListener('click', async function() {
+                if (confirm('⚠️ Are you sure you want to clear all dashboard data?
+
+This action cannot be undone.')) {
+                    try {
+                        const response = await fetch('/api/dashboard/clear_data', {
+                            method: 'POST'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            showNotification(result.message, 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showNotification('Error clearing data: ' + result.error, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error clearing data:', error);
+                        showNotification('Error clearing data. Please check console for details.', 'error');
+                    }
+                }
+            });
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            if (type === 'success') {
+                notification.style.backgroundColor = '#10B981';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#EF4444';
+            } else {
+                notification.style.backgroundColor = '#3B82F6';
+            }
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
